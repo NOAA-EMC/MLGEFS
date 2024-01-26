@@ -7,7 +7,7 @@ output_dir="fv3anl2000_00z_1d"
 mkdir -p "$output_dir"
 
 # Loop through files in the input directory
-for file in "$input_dir"/*.pgrb2; do
+for file in "$input_dir"/*.f000; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
         
