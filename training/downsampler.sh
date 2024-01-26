@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# load module lib
+source /etc/profile.d/modules.sh
+
+# load necessary modules
+module use /contrib/spack-stack/envs/ufswm/install/modulefiles/Core/
+module load stack-intel
+module load wgrib2
+module list
+
+
 input_dir="fv3anl2000_00z"
 output_dir="fv3anl2000_00z_1d"
 
