@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Sadegh Tabas, initial commit
+
+
 # load module lib
 source /etc/profile.d/modules.sh
 
@@ -9,9 +12,30 @@ module load stack-intel
 module load wgrib2
 module list
 
+while getopts ":i:o:" opt; do
+  case $opt in
+    i)
+      input_dir=$OPTARG
+      ;;
+    o)
+      output_dir=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
 
-input_dir="fv3anl2000_00z"
-output_dir="fv3anl2000_00z_1d"
+if [ -z "$input_dir" ] || [ -z "$output_dir" ]; then
+  echo "Usage: $0 -i <input_directory> -o <output_directory>"
+  exit 1
+fi
+
 
 # Ensure the output directory exists
 mkdir -p "$output_dir"
@@ -39,3 +63,5 @@ for file in "$input_dir"/*.f000; do
     fi
 done
 
+# Indicate that the job is done
+echo "Job completed successfully!"
