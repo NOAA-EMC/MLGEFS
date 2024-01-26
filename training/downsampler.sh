@@ -57,7 +57,7 @@ for file in "$input_dir"/*.f000; do
         output_path="$output_dir/$output_filename"
 
         # Use wgrib2 to perform the downsampling (adjust the resolution factor as needed)
-        wgrib2 "$input_path" -new_grid_winds earth -new_grid_interpolation budget -new_grid latlon 0:360:1.0 -90:181:1.0 "$output_path"
+        wgrib2 "$input_path" -new_grid_winds earth -new_grid_interpolation neighbor -new_grid latlon 0:360:1.0 -90:181:1.0 "$output_path"
 
         echo "Downsampled $input_path to $output_path"
     fi
