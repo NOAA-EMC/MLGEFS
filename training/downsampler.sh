@@ -57,8 +57,13 @@ for file in "$input_dir"/*.f000; do
         output_path="$output_dir/$output_filename"
 
         # Use wgrib2 to perform the downsampling (adjust the resolution factor as needed)
-        wgrib2 "$input_path" -new_grid_winds earth -new_grid_interpolation neighbor -new_grid latlon 0:360:1.0 -90:181:1.0 "$output_path"
-
+        # wgrib2 "$input_path" -new_grid_winds earth -new_grid_interpolation neighbor -new_grid latlon 0:360:1.0 -90:181:1.0 "$output_path"
+        wgrib2 "$input_path" -new_grid_winds grid -set_grib_type c3 \
+          -new_grid_interpolation bilinear \
+          -if ":(VGTYP|SOTYP):" -new_grid_interpolation neighbor -fi \
+          -if ":(PRATE|APCP):" -new_grid_interpolation budget -fi \
+          -new_grid ncep grid 3 "$output_path"
+          
         echo "Downsampled $input_path to $output_path"
     fi
 done
