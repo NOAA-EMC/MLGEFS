@@ -19,7 +19,7 @@ class GEFSDataProcessor:
         self.output_directory = output_directory
         self.num_levels = num_pressure_levels
         self.file_formats = ['1p00.f000',] # , '0p25.f001', '0p25.f006'
-        
+        os.makedirs(self.output_directory, exist_ok=True)
 
     def process_data(self):
         # the directory where your GRIB2 files are located
