@@ -24,7 +24,7 @@ class GEFSDataProcessor:
     def process_data(self):
         # the directory where your GRIB2 files are located
         data_directory = self.input_directory
-
+        grib2_file_extension = self.file_formats[0]
         # Create a dictionary to specify the variables, levels, and whether to extract only the first time step (if needed)
         variables_to_extract = {
             '.f000': {
@@ -49,7 +49,6 @@ class GEFSDataProcessor:
                 },
             }
         }
-        
         if self.num_levels == 37:
             variables_to_extract['.f000'][':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(1|2|3|5|7|10|20|30|50|70|100|125|150|175|200|225|250|300|350|400|450|500|550|600|650|700|750|775|800|825|850|875|900|925|950|975|1000) mb:']
 
@@ -58,11 +57,11 @@ class GEFSDataProcessor:
         files = []
         print("Start extracting variables and associated levels from grib2 files:")
 
-        grib2_file_list = [file for file in os.listdir(data_directory) if file.endswith(file_extension)]
-        
+        grib2_file_list = [file for file in os.listdir(data_directory) if file.endswith(grib2_file_extension)]
+        print(grib2_file_list)
         for grib2_file in grib2_file_list:  
             
-            for file_extension, variable_data in variables_to_extract.items():                 
+            for file_extension, variable_data in variables_to_extract.items():              
                 for variable, data in variable_data.items():
                     levels = data['levels']
                     first_time_step_only = data.get('first_time_step_only', False)  # Default to False if not specified
