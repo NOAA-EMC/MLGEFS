@@ -46,7 +46,8 @@ class GEFSDataProcessor:
                 },
                 ':APCP:': {  # APCP
                     'levels': [':surface:'],
-            },
+                },
+            }
             '''  
             '.f006': {
                 ':LAND:': {
@@ -59,6 +60,7 @@ class GEFSDataProcessor:
             }
             '''
         }
+        
         if self.num_levels == 37:
             variables_to_extract['.f000'][':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(1|2|3|5|7|10|20|30|50|70|100|125|150|175|200|225|250|300|350|400|450|500|550|600|650|700|750|775|800|825|850|875|900|925|950|975|1000) mb:']
 
