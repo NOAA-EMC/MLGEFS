@@ -14,11 +14,11 @@ import xarray as xr
 import numpy as np
 
 class GEFSDataProcessor:
-    def __init__(self, input_directory, num_pressure_levels=13, output_directory=None):
+    def __init__(self, input_directory, output_directory=None, num_pressure_levels=13):
         self.input_directory = input_directory
         self.output_directory = output_directory
         self.num_levels = num_pressure_levels
-        self.file_formats = ['0p25.f000',] # , '0p25.f001', '0p25.f006'
+        self.file_formats = ['1p00.f000',] # , '0p25.f001', '0p25.f006'
         
 
     def process_data(self):
@@ -47,6 +47,10 @@ class GEFSDataProcessor:
                 ':APCP:': {  # APCP
                     'levels': [':surface:'],
                 },
+                ':LAND:': {
+                'levels': [':surface:'],
+                'first_time_step_only': True,  # Extract only the first time step
+                },
             }
         }
         if self.num_levels == 37:
@@ -58,9 +62,9 @@ class GEFSDataProcessor:
         print("Start extracting variables and associated levels from grib2 files:")
 
         grib2_file_list = [file for file in os.listdir(data_directory) if file.endswith(grib2_file_extension)]
-        print(grib2_file_list)
+ 
         for grib2_file in grib2_file_list:  
-            
+            print(grib2_file)
             for file_extension, variable_data in variables_to_extract.items():              
                 for variable, data in variable_data.items():
                     levels = data['levels']
@@ -72,7 +76,8 @@ class GEFSDataProcessor:
                         files.append(output_file)
                         
                         # Use wgrib2 to extract the variable with level
-                        wgrib2_command = ['wgrib2', '-nc_nlev', f'{self.num_levels}', grib2_file, '-match', f'{variable}', '-match', f'{level}', '-netcdf', output_file]
+                        grib2_file_path = os.path.join(data_directory, grib2_file)
+                        wgrib2_command = ['wgrib2', '-nc_nlev', f'{self.num_levels}', grib2_file_path, '-match', f'{variable}', '-match', f'{level}', '-netcdf', output_file]
                         subprocess.run(wgrib2_command, check=True)
     
                         # Open the extracted netcdf file as an xarray dataset
