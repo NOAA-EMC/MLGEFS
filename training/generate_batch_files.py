@@ -10,6 +10,7 @@ import argparse
 import xarray as xr
 import numpy as np
 import copy
+import re
 
 class GEFSDataProcessor:
     def __init__(self, input_directory, output_directory, variables, num_pressure_levels=13):
@@ -60,7 +61,7 @@ class GEFSDataProcessor:
             ds = self.reshape_ds(ds)
 
             base_name, _ = os.path.splitext(grib2_file)
-            output_file_name = base_name + '.nc'
+            output_file_name = self.generate_new_file_name(base_name)
             output_netcdf = os.path.join(self.output_directory, output_file_name)
 
             ds.to_netcdf(output_netcdf)
@@ -113,12 +114,29 @@ class GEFSDataProcessor:
 
         return ds
 
+    def generate_new_file_name(self, original_file_name):
+        # Extract relevant information using regular expressions
+        match = re.match(r"gec(\d{2})\.t(\d{2})z\.pgrb2\.(\d{8})\.(\dp\d{2})", original_file_name)
+        
+        if match:
+            model_run = match.group(1)
+            forecast_time = match.group(2)
+            date = match.group(3)
+            resolution = match.group(4)
+            
+            new_file_name = f"{date}{forecast_time}.{resolution}.{self.num_levels}lvl.nc"
+            return new_file_name
+        else:
+            # Handle the case where the original file name doesn't match the expected pattern
+            print(f"Warning: Unable to parse file name - {original_file_name}")
+            return None
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process GEFS data to generate GraphCast inputs")
     parser.add_argument("-i", "--input", help="directory to grib2 files")
     parser.add_argument("-o", "--output", help="Output directory for processed data")
-    parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 37", default="37")
+    parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 31", default="13")
 
     args = parser.parse_args()
     input_directory = args.input
@@ -137,8 +155,8 @@ if __name__ == "__main__":
         }
     }
 
-    if num_pressure_levels == 37:
-        variables['.f000'][':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(1|2|3|5|7|10|20|30|50|70|100|125|150|175|200|225|250|300|350|400|450|500|550|600|650|700|750|775|800|825|850|875|900|925|950|975|1000) mb:']
+    if num_pressure_levels == 31:
+        variables['.f000'][':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(1|2|3|5|7|10|20|30|50|70|100|150|200|250|300|350|400|450|500|550|600|650|700|750|800|850|900|925|950|975|1000) mb:']
 
     data_processor = GEFSDataProcessor(input_directory, output_directory, variables, num_pressure_levels)
     data_processor.process_data()
