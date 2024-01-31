@@ -57,11 +57,12 @@ class GEFSDataProcessor:
         extracted_datasets = []
         files = []
         print("Start extracting variables and associated levels from grib2 files:")
+
+        grib2_file_list = [file for file in os.listdir(data_directory) if file.endswith(file_extension)]
         
-        for file_extension, variable_data in variables_to_extract.items():
-            grib2_file_list = [file for file in os.listdir(data_directory) if file.endswith(file_extension)]
+        for grib2_file in grib2_file_list:  
             
-            for grib2_file in grib2_file_list:                
+            for file_extension, variable_data in variables_to_extract.items():                 
                 for variable, data in variable_data.items():
                     levels = data['levels']
                     first_time_step_only = data.get('first_time_step_only', False)  # Default to False if not specified
