@@ -48,17 +48,6 @@ class GEFSDataProcessor:
                     'levels': [':surface:'],
                 },
             }
-            '''  
-            '.f006': {
-                ':LAND:': {
-                    'levels': [':surface:'],
-                    'first_time_step_only': True,  # Extract only the first time step
-                },
-                ':APCP:': {  # APCP
-                    'levels': [':surface:'],
-                },
-            }
-            '''
         }
         
         if self.num_levels == 37:
