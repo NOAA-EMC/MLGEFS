@@ -185,3 +185,4 @@ if __name__ == "__main__":
     output_directory = args.output
 
     data_processor = GEFSDataProcessor(input_directory, output_directory, num_pressure_levels)
+    data_processor.process_data()
