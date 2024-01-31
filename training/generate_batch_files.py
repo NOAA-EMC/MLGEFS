@@ -14,7 +14,7 @@ import xarray as xr
 import numpy as np
 
 class GEFSDataProcessor:
-    def __init__(self, start_datetime, end_datetime, num_pressure_levels=13, input_directory, output_directory=None):
+    def __init__(self, input_directory, num_pressure_levels=13, output_directory=None):
         self.input_directory = input_directory
         self.output_directory = output_directory
         self.num_levels = num_pressure_levels
