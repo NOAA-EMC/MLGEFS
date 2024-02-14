@@ -2,7 +2,7 @@
 Description
 @uthor: Sadegh Sadeghi Tabas (sadegh.tabas@noaa.gov)
 Revision history:
-    -20240201: Sadegh Tabas, initial code
+    -20240201: Sadegh Tabas, initial commit, this script generates batch files in netcdf format from GEFS grib2 data for every cycle.
 '''
 import os
 import subprocess
