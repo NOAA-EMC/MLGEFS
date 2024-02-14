@@ -84,7 +84,7 @@ class GEFSDataProcessor:
             'TMP_2maboveground': '2m_temperature',
             'UGRD_10maboveground': '10m_u_component_of_wind',
             'VGRD_10maboveground': '10m_v_component_of_wind',
-            'APCP_surface': 'total_precipitation_6hr',
+            #'APCP_surface': 'total_precipitation_6hr',
             'HGT': 'geopotential',
             'TMP': 'temperature',
             'SPFH': 'specific_humidity',
@@ -110,7 +110,7 @@ class GEFSDataProcessor:
         ds['geopotential_at_surface'] = ds['geopotential_at_surface'] * 9.80665
         ds['geopotential'] = ds['geopotential'] * 9.80665
 
-        ds['total_precipitation_6hr'] = ds['total_precipitation_6hr'] / 1000
+        #ds['total_precipitation_6hr'] = ds['total_precipitation_6hr'] / 1000
 
         return ds
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
             ':PRMSL:': {'levels': [':mean sea level:']},
             ':VGRD|UGRD:': {'levels': [':10 m above ground:']},
             ':SPFH|VVEL|VGRD|UGRD|HGT|TMP:': {'levels': [':(50|100|150|200|250|300|400|500|600|700|850|925|1000) mb:']},
-            ':APCP:': {'levels': [':surface:']},
+            #':APCP:': {'levels': [':surface:']},
             ':LAND:': {'levels': [':surface:'], 'first_time_step_only': True},
         }
     }
