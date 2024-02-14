@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Sadegh Tabas, initial commit
+# Sadegh Tabas, initial commit, this script downsamples 0.25-degree resolution GEFS data to 1.0-degree resolution. 
 
 
 # load module lib
