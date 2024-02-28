@@ -594,11 +594,11 @@ class GFSDataProcessor:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Download and process GDAS data")
+    parser = argparse.ArgumentParser(description="Download and process GEFS data")
     parser.add_argument("start_datetime", help="Start datetime in the format 'YYYYMMDDHH'")
     parser.add_argument("end_datetime", help="End datetime in the format 'YYYYMMDDHH'")
     parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 37", default="13")
-    parser.add_argument("-m", "--method", help="method to extact variables from grib2, options: wgrib2, pygrib", default="wgrib2")
+    parser.add_argument("-m", "--method", help="method to extract variables from grib2, options: wgrib2, pygrib", default="wgrib2")
     parser.add_argument("-s", "--source", help="the source repository to download gdas grib2 data, options: nomads (up-to-date), s3", default="s3")
     parser.add_argument("-o", "--output", help="Output directory for processed data")
     parser.add_argument("-d", "--download", help="Download directory for raw data")
@@ -614,7 +614,7 @@ if __name__ == "__main__":
     output_directory = args.output
     download_directory = args.download
     keep_downloaded_data = args.keep.lower() == "yes"
-
+    '''
     # Initialize S3 credentials path
     PW_CSP = os.getenv('PW_CSP', '')
     if PW_CSP in ["aws", "google", "azure"]:
@@ -627,14 +627,14 @@ if __name__ == "__main__":
         # Set the environment variables
         os.environ['AWS_SHARED_CREDENTIALS_FILE']=custom_credentials_file
         os.environ['AWS_CONFIG_FILE']=custom_config_file
-
+    
     # check environment variables
     if (download_source == 's3') & (os.environ.get('AWS_SHARED_CREDENTIALS_FILE') is None) | (os.environ.get('AWS_CONFIG_FILE') is None):
         if os.environ.get('AWS_SHARED_CREDENTIALS_FILE') is None:
             raise ValueError('Please set up environment varialbes AWS_SHARED_CREDENTIALS_FILE')
         if os.environ.get('AWS_CONFIG_FILE') is None:
             raise ValueError('Please set up environment varialbes AWS_CONFIG_FILE')
-
+    '''
     data_processor = GFSDataProcessor(start_datetime, end_datetime, num_pressure_levels, download_source, output_directory, download_directory, keep_downloaded_data)
     data_processor.download_data()
     
