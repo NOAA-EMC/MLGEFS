@@ -23,19 +23,17 @@ from bs4 import BeautifulSoup
 
 
 class GFSDataProcessor:
-    def __init__(self, start_datetime, end_datetime, member, num_pressure_levels=13, download_source='nomads', output_directory=None, download_directory=None, keep_downloaded_data=True, aws=None):
+    def __init__(self, start_datetime, end_datetime, member, num_pressure_levels=13, output_directory=None, download_directory=None, keep_downloaded_data=True, aws=None):
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
         self.num_levels = num_pressure_levels
-        self.download_source = download_source
         self.output_directory = output_directory
         self.download_directory = download_directory
         self.keep_downloaded_data = keep_downloaded_data
         self.member = member
 
 
-        if self.download_source == 's3':
-            self.s3 = boto3.client('s3')
+        self.s3 = boto3.client('s3')
     
         # Specify the S3 bucket name and root directory
         self.bucket_name = 'noaa-ncepdev-none-ca-ufs-cpldcld'
@@ -56,21 +54,10 @@ class GFSDataProcessor:
     
     def s3bucket(self, date_str, time_str, local_directory):
         # Construct the S3 prefix for the directory
-        s3_prefix = f"Sadegh.Tabas/gdas_wcoss2/{self.root_directory}.{date_str}/{time_str}/"
+        s3_prefix = f"Sadegh.Tabas/gdas_wcoss2/{self.root_directory}.{date_str}/{time_str}/atmos/*/"
 
-        # get prefix for precip from the previous cycle
         # Convert date_str and time_str to datetime object
         datetime_obj = datetime.strptime(date_str + time_str, "%Y%m%d%H")
-
-        # Get the datetime 6 hours before
-        datetime_before = datetime_obj - timedelta(hours=6)
-
-        # Get the date string and time string from datetime objects
-        date_str_precip = datetime_before.strftime("%Y%m%d")
-        time_str_precip = datetime_before.strftime("%H")
-
-        # Construct the S3 prefix for the directory
-        s3_prefix_precip = f"Sadegh.Tabas/gdas_wcoss2/{self.root_directory}.{date_str_precip}/{time_str_precip}/"
 
         def get_data(s3_prefix, file_format, local_directory):
             # List objects in the S3 directory
@@ -91,60 +78,6 @@ class GFSDataProcessor:
                 get_data(s3_prefix, file_format, local_directory)
             else:
                 get_data(s3_prefix_precip, file_format, local_directory)
-
-        
-    
-    def nomads(self, date_str, time_str, local_directory):
-
-        # Convert date_str and time_str to datetime object
-        datetime_obj = datetime.strptime(date_str + time_str, "%Y%m%d%H")
-
-        # Get the datetime 6 hours before
-        datetime_before = datetime_obj - timedelta(hours=6)
-
-        # Get the date string and time string from datetime objects
-        date_str_precip = datetime_before.strftime("%Y%m%d")
-        time_str_precip = datetime_before.strftime("%H")
-        
-        def get_data(date_str, time_str, file_format, local_directory):
-            # Construct the URL for the data directory
-            gdas_url = f"https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/{self.root_directory}.{date_str}/{time_str}/atmos/"
-            
-            # Get the list of files from the URL
-            response = requests.get(gdas_url)
-            if response.status_code == 200:
-                # Parse the HTML content using BeautifulSoup
-                soup = BeautifulSoup(response.content, 'html.parser')
-                
-                # Find all anchor tags (links) in the HTML
-                anchor_tags = soup.find_all('a')
-                
-                # Extract file URLs from href attributes of anchor tags
-                file_urls = [gdas_url + tag['href'] for tag in anchor_tags if tag.get('href')]
-    
-                for file_url in file_urls: 
-                    
-                    if file_url.endswith(f'.{file_format}'):
-                        
-                        # Define the local file path
-                        local_file_path = os.path.join(local_directory, os.path.basename(file_url))
-                        
-                        # Download the file from S3 to the local path
-                        try:
-                            # Run the wget command
-                            subprocess.run(['wget', file_url, '-O', local_file_path], check=True)
-                            print(f"Download completed: {file_url} => {local_file_path}")
-                        except subprocess.CalledProcessError as e:
-                            print(f"Error downloading {file_url}: {e}")
-
-        for file_format in self.file_formats:
-            if file_format !='pgrb2.0p25.f006':
-                get_data(date_str, time_str, file_format, local_directory)
-            else:
-                get_data(date_str_precip, time_str_precip, file_format, local_directory)
-
-
-    
         
     def download_data(self):
         # Calculate the number of 6-hour intervals
@@ -163,10 +96,8 @@ class GFSDataProcessor:
             # Create the local directory if it doesn't exist
             os.makedirs(local_directory, exist_ok=True)
             
-            if self.download_source == 's3':
-                self.s3bucket(date_str, time_str, local_directory)
-            else:
-                self.nomads(date_str, time_str, local_directory)
+            
+            self.s3bucket(date_str, time_str, local_directory)
                 
             
 
@@ -602,7 +533,6 @@ if __name__ == "__main__":
     parser.add_argument("member", help="GEFS member options: [control, p01, ..., p30]")
     parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 37", default="13")
     parser.add_argument("-m", "--method", help="method to extract variables from grib2, options: wgrib2, pygrib", default="wgrib2")
-    parser.add_argument("-s", "--source", help="the source repository to download gdas grib2 data, options: nomads (up-to-date), s3", default="s3")
     parser.add_argument("-o", "--output", help="Output directory for processed data")
     parser.add_argument("-d", "--download", help="Download directory for raw data")
     parser.add_argument("-k", "--keep", help="Keep downloaded data (yes or no)", default="no")
@@ -613,7 +543,6 @@ if __name__ == "__main__":
     end_datetime = datetime.strptime(args.end_datetime, "%Y%m%d%H")
     member = args.member
     num_pressure_levels = int(args.levels)
-    download_source = args.source
     method = args.method
     output_directory = args.output
     download_directory = args.download
@@ -639,7 +568,7 @@ if __name__ == "__main__":
         if os.environ.get('AWS_CONFIG_FILE') is None:
             raise ValueError('Please set up environment varialbes AWS_CONFIG_FILE')
     
-    data_processor = GFSDataProcessor(start_datetime, end_datetime, member, num_pressure_levels, download_source, output_directory, download_directory, keep_downloaded_data)
+    data_processor = GFSDataProcessor(start_datetime, end_datetime, member, num_pressure_levels, output_directory, download_directory, keep_downloaded_data)
     data_processor.download_data()
     
     if method == "wgrib2":
