@@ -40,17 +40,17 @@ class GFSDataProcessor:
         # Specify the S3 bucket name and root directory
         self.bucket_name = 'noaa-ncepdev-none-ca-ufs-cpldcld'
         
-        self.root_directory = 'gdas'
+        self.root_directory = 'gefs'
 
         # Specify the local directory where you want to save the files
         if self.download_directory is None:
-            self.local_base_directory = os.path.join(os.getcwd(), self.bucket_name+'_'+str(self.num_levels))  # Use current directory if not specified
+            self.local_base_directory = os.path.join(os.getcwd(), self.bucket_name+'_'+str(self.num_levels)+'_'+str(self.member))  # Use current directory if not specified
         else:
-            self.local_base_directory = os.path.join(self.download_directory, self.bucket_name+'_'+str(self.num_levels))
+            self.local_base_directory = os.path.join(self.download_directory, self.bucket_name+'_'+str(self.num_levels)+'_'+str(self.member))
 
         # List of file formats to download
         if self.num_levels == 13:     
-            self.file_formats = ['pgrb2.0p25.f000', 'pgrb2.0p25.f006'] # , '0p25.f001'
+            self.file_formats = ['pgrb2.0p25.f000', 'pgrb2s.0p25.f000'] # , '0p25.f001'
         else:
             self.file_formats = ['pgrb2.0p25.f000', 'pgrb2b.0p25.f000', 'pgrb2.0p25.f006'] # , '0p25.f001'
     
