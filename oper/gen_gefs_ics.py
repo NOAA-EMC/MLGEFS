@@ -1,5 +1,5 @@
 '''
-Description: this script gets ensemble GEFS members for GraphCast initialization
+Description: This script gets ensemble GEFS members for GraphCast initialization
 @uthor: Sadegh Sadeghi Tabas (sadegh.tabas@noaa.gov)
 Revision history: Sadegh Tabas, initial code
 
