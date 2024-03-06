@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 
 
 class GFSDataProcessor:
-    def __init__(self, start_datetime, end_datetime, num_pressure_levels=13, download_source='nomads', output_directory=None, download_directory=None, keep_downloaded_data=True, aws=None):
+    def __init__(self, start_datetime, end_datetime, member, num_pressure_levels=13, download_source='nomads', output_directory=None, download_directory=None, keep_downloaded_data=True, aws=None):
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
         self.num_levels = num_pressure_levels
@@ -31,6 +31,8 @@ class GFSDataProcessor:
         self.output_directory = output_directory
         self.download_directory = download_directory
         self.keep_downloaded_data = keep_downloaded_data
+        self.member = member
+
 
         if self.download_source == 's3':
             self.s3 = boto3.client('s3')
@@ -597,6 +599,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download and process GEFS data")
     parser.add_argument("start_datetime", help="Start datetime in the format 'YYYYMMDDHH'")
     parser.add_argument("end_datetime", help="End datetime in the format 'YYYYMMDDHH'")
+    parser.add_argument("member", help="GEFS member options: [control, p01, ..., p30]")
     parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 37", default="13")
     parser.add_argument("-m", "--method", help="method to extract variables from grib2, options: wgrib2, pygrib", default="wgrib2")
     parser.add_argument("-s", "--source", help="the source repository to download gdas grib2 data, options: nomads (up-to-date), s3", default="s3")
@@ -608,13 +611,14 @@ if __name__ == "__main__":
 
     start_datetime = datetime.strptime(args.start_datetime, "%Y%m%d%H")
     end_datetime = datetime.strptime(args.end_datetime, "%Y%m%d%H")
+    member = args.member
     num_pressure_levels = int(args.levels)
     download_source = args.source
     method = args.method
     output_directory = args.output
     download_directory = args.download
     keep_downloaded_data = args.keep.lower() == "yes"
-    '''
+    
     # Initialize S3 credentials path
     PW_CSP = os.getenv('PW_CSP', '')
     if PW_CSP in ["aws", "google", "azure"]:
@@ -634,8 +638,8 @@ if __name__ == "__main__":
             raise ValueError('Please set up environment varialbes AWS_SHARED_CREDENTIALS_FILE')
         if os.environ.get('AWS_CONFIG_FILE') is None:
             raise ValueError('Please set up environment varialbes AWS_CONFIG_FILE')
-    '''
-    data_processor = GFSDataProcessor(start_datetime, end_datetime, num_pressure_levels, download_source, output_directory, download_directory, keep_downloaded_data)
+    
+    data_processor = GFSDataProcessor(start_datetime, end_datetime, member, num_pressure_levels, download_source, output_directory, download_directory, keep_downloaded_data)
     data_processor.download_data()
     
     if method == "wgrib2":
