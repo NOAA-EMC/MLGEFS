@@ -2,10 +2,7 @@
 Description: Script to call the graphcast model using gdas products
 Author: Sadegh Sadeghi Tabas (sadegh.tabas@noaa.gov)
 Revision history:
-    -20231218: Sadegh Tabas, initial code
-    -20240118: Sadegh Tabas, S3 bucket module to upload data, adding forecast length, Updating batch dataset to account for forecast length
-    -20240125: Linlin Cui, added a capability to save output as grib2 format
-    -20240205: Sadegh Tabas, made the code clearer, added 37 pressure level option, updated upload to s3
+    -20240307: Sadegh Tabas, initial code
 '''
 import os
 import argparse
@@ -31,16 +28,17 @@ from graphcast import rollout
 from utils.nc2grib import Netcdf2Grib
 
 class GraphCastModel:
-    def __init__(self, pretrained_model_path, gdas_data_path, output_dir=None, num_pressure_levels=13, forecast_length=40):
+    def __init__(self, pretrained_model_path, gdas_data_path, gefs_member, output_dir=None, num_pressure_levels=13, forecast_length=40):
         self.pretrained_model_path = pretrained_model_path
         self.gdas_data_path = gdas_data_path
         self.forecast_length = forecast_length
         self.num_pressure_levels = num_pressure_levels
+        self.gefs_member = gefs_member
         
         if output_dir is None:
-            self.output_dir = os.path.join(os.getcwd(), f"forecasts_{str(self.num_pressure_levels)}_levels")  # Use current directory if not specified
+            self.output_dir = os.path.join(os.getcwd(), f"forecasts_{str(self.num_pressure_levels)}_levels_{self.gefs_member}")  # Use current directory if not specified
         else:
-            self.output_dir = os.path.join(output_dir, f"forecasts_{str(self.num_pressure_levels)}_levels")
+            self.output_dir = os.path.join(output_dir, f"forecasts_{str(self.num_pressure_levels)}_levels_{self.gefs_member}")
         os.makedirs(self.output_dir, exist_ok=True)
         
         self.params = None
@@ -182,7 +180,7 @@ class GraphCastModel:
 
         # Call and save forecasts in grib2
         converter = Netcdf2Grib()
-        converter.save_grib2(self.dates, forecasts, self.output_dir)
+        converter.save_grib2(self.dates, forecasts, self.gefs_member, self.output_dir)
         
     
     def upload_to_s3(self, keep_data):
@@ -242,13 +240,14 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", help="input file path (including file name)", required=True)
     parser.add_argument("-w", "--weights", help="parent directory of the graphcast params and stats", required=True)
     parser.add_argument("-l", "--length", help="length of forecast (6-hourly), an integer number in range [1, 40]", required=True)
+    parser.add_argument("-m", "--member", help="gefs member [c00, p01, ..., p30]", required=True)
     parser.add_argument("-o", "--output", help="output directory", default=None)
     parser.add_argument("-p", "--pressure", help="number of pressure levels", default=13)
     parser.add_argument("-u", "--upload", help="upload input data as well as forecasts to noaa s3 bucket (yes or no)", default = "no")
     parser.add_argument("-k", "--keep", help="keep input and output after uploading to noaa s3 bucket (yes or no)", default = "no")
     
     args = parser.parse_args()
-    runner = GraphCastModel(args.weights, args.input, args.output, int(args.pressure), int(args.length))
+    runner = GraphCastModel(args.weights, args.input, args.member, args.output, int(args.pressure), int(args.length))
     
     runner.load_pretrained_model()
     runner.load_gdas_data()
