@@ -50,7 +50,7 @@ class Netcdf2Grib:
                 eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 101)
         yield grib_message
 
-    def save_grib2(self, dates, forecasts, outdir):
+    def save_grib2(self, dates, forecasts, gefs_member, outdir):
         """
         Convert netCDF file to GRIB2 format file.
             Args:
@@ -75,7 +75,7 @@ class Netcdf2Grib:
         forecasts['total_precipitation_6hr'] = forecasts['total_precipitation_6hr'] * 1000
         forecasts['total_precipitation'] = forecasts['total_precipitation_6hr'].cumsum(axis=0)
 
-        filename = os.path.join(outdir, "forecast_to_grib2.nc")
+        filename = os.path.join(outdir, f"forecast_to_grib2_{gefs_member}.nc")
         forecasts.to_netcdf(filename)
 
         # Load cubes from netCDF file
@@ -97,7 +97,7 @@ class Netcdf2Grib:
         for date in datevectors:
             print(f"Processing for time {date.strftime('%Y-%m-%d %H:00:00')}")
             hrs = int((date - forecast_starttime).total_seconds() // 3600)
-            outfile = os.path.join(outdir, f'graphcastgfs.t{cycle:02d}z.pgrb2.0p25.f{hrs:03d}')
+            outfile = os.path.join(outdir, f'graphcastge{gefs_member}.t{cycle:02d}z.pgrb2.0p25.f{hrs:03d}')
             print(outfile)
 
             for cube in cubes:
