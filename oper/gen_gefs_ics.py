@@ -54,7 +54,7 @@ class GFSDataProcessor:
     
     def s3bucket(self, date_str, time_str, local_directory):
         # Construct the S3 prefix for the directory
-        s3_prefix = f"Sadegh.Tabas/gdas_wcoss2/{self.root_directory}.{date_str}/{time_str}/atmos/*/ge{self.member}.t{time_str}z.*"
+        s3_prefix = f"Sadegh.Tabas/gefs_wcoss2/{self.root_directory}.{date_str}/{time_str}/atmos/*/ge{self.member}.t{time_str}z.*"
 
         # Convert date_str and time_str to datetime object
         datetime_obj = datetime.strptime(date_str + time_str, "%Y%m%d%H")
