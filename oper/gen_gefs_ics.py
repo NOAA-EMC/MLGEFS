@@ -108,7 +108,7 @@ class GFSDataProcessor:
 
         # Create a dictionary to specify the variables, levels, and whether to extract only the first time step (if needed)
         variables_to_extract = {
-            '.pgrb2.0p25.f000': {
+            '.pgrb2s.0p25.f000': {
                 ':HGT:': {
                     'levels': [':surface:'],
                     'first_time_step_only': True,  # Extract only the first time step
@@ -122,17 +122,17 @@ class GFSDataProcessor:
                 ':VGRD|UGRD:': {
                     'levels': [':10 m above ground:'],
                 },
-                ':SPFH|VVEL|VGRD|UGRD|HGT|TMP:': {
-                    'levels': [':(50|100|150|200|250|300|400|500|600|700|850|925|1000) mb:'],
-                },
             },
-            '.pgrb2.0p25.f006': {
+            '.pgrb2.0p25.f000': {
                 ':LAND:': {
                     'levels': [':surface:'],
                     'first_time_step_only': True,  # Extract only the first time step
                 },
                 '^(597):': {  # APCP
                     'levels': [':surface:'],
+                },
+                ':SPFH|VVEL|VGRD|UGRD|HGT|TMP:': {
+                    'levels': [':(50|100|150|200|250|300|400|500|600|700|850|925|1000) mb:'],
                 },
             }
         }
