@@ -531,7 +531,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download and process GEFS data")
     parser.add_argument("start_datetime", help="Start datetime in the format 'YYYYMMDDHH'")
     parser.add_argument("end_datetime", help="End datetime in the format 'YYYYMMDDHH'")
-    parser.add_argument("member", help="GEFS member options: [control, p01, ..., p30]")
+    parser.add_argument("member", help="GEFS member options: [c00, p01, ..., p30]")
     parser.add_argument("-l", "--levels", help="number of pressure levels, options: 13, 37", default="13")
     parser.add_argument("-m", "--method", help="method to extract variables from grib2, options: wgrib2, pygrib", default="wgrib2")
     parser.add_argument("-o", "--output", help="Output directory for processed data")
