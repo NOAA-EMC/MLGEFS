@@ -2,9 +2,9 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=30  # Use all available CPU cores
 #SBATCH --time=4:00:00  # Adjust this to your estimated run time
-#SBATCH --job-name=$gefs_member
-#SBATCH --output=$gefs_member_output.txt
-#SBATCH --error=$gefs_member_error.txt
+#SBATCH --job-name="$gefs_member"
+#SBATCH --output="$gefs_member_output.txt"
+#SBATCH --error="$gefs_member_error.txt"
 #SBATCH --partition=compute
 
 # load module lib
