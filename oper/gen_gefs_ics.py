@@ -173,7 +173,7 @@ class GFSDataProcessor:
                                 
                             # Extract the specified variables with levels from the GRIB2 file
                             for level in levels:
-                                output_file = f'{variable}_{level}_{date_folder}_{hour}{file_extension}_{self.num_levels}.nc'
+                                output_file = f'{variable}_{level}_{date_folder}_{hour}{file_extension}_{self.num_levels}_{self.member}.nc'
                                 files.append(output_file)
                                 
                                 # Extracting levels using regular expression
