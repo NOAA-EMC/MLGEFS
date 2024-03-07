@@ -128,9 +128,6 @@ class GFSDataProcessor:
                     'levels': [':surface:'],
                     'first_time_step_only': True,  # Extract only the first time step
                 },
-                '^(597):': {  # APCP
-                    'levels': [':surface:'],
-                },
                 ':SPFH|VVEL|VGRD|UGRD|HGT|TMP:': {
                     'levels': [':(50|100|150|200|250|300|400|500|600|700|850|925|1000) mb:'],
                 },
@@ -163,7 +160,7 @@ class GFSDataProcessor:
                             levels = data['levels']
                             first_time_step_only = data.get('first_time_step_only', False)  # Default to False if not specified
 
-                            pattern = os.path.join(subfolder_path, f'gdas.t*z{file_extension}')
+                            pattern = os.path.join(subfolder_path, f'ge{self.member}.t*z{file_extension}')
                             # Use glob to search for files matching the pattern
                             matching_files = glob.glob(pattern)
                             
@@ -230,7 +227,7 @@ class GFSDataProcessor:
             'TMP_2maboveground': '2m_temperature',
             'UGRD_10maboveground': '10m_u_component_of_wind',
             'VGRD_10maboveground': '10m_v_component_of_wind',
-            'APCP_surface': 'total_precipitation_6hr',
+            #'APCP_surface': 'total_precipitation_6hr',
             'HGT': 'geopotential',
             'TMP': 'temperature',
             'SPFH': 'specific_humidity',
@@ -263,7 +260,15 @@ class GFSDataProcessor:
         ds['geopotential'] = ds['geopotential'] * 9.80665
 
         # Update total_precipitation_6hr unit to (m) from (kg/m^2) by dividing it by 1000kg/m³
-        ds['total_precipitation_6hr'] = ds['total_precipitation_6hr'] / 1000
+        # ds['total_precipitation_6hr'] = ds['total_precipitation_6hr'] / 1000
+        # add total precip with 0 values (does not impact the forecasts for 13 PLs)
+        other_dims = ['batch', 'time', 'lat', 'lon']
+        # Create an array filled with zeros for other dimensions
+        zeros_shape = tuple(ds.sizes[dim] for dim in other_dims)
+        zeros_array = np.zeros(zeros_shape, dtype=np.float32)
+
+        # Add the zeros array as a new variable in the dataset
+        ds['total_precipitation_6hr'] = (other_dims, zeros_array)
         
         # Define the output NetCDF file
         date = (self.start_datetime + timedelta(hours=6)).strftime('%Y%m%d%H')
