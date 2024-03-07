@@ -54,17 +54,15 @@ class GFSDataProcessor:
     
     def s3bucket(self, date_str, time_str, local_directory):
         # Construct the S3 prefix for the directory
-        s3_prefix = f"Sadegh.Tabas/gefs_wcoss2/{self.root_directory}.{date_str}/{time_str}/atmos/*/ge{self.member}.t{time_str}z.*"
-
-        # Convert date_str and time_str to datetime object
-        datetime_obj = datetime.strptime(date_str + time_str, "%Y%m%d%H")
+        s3_prefix = f"Sadegh.Tabas/gefs_wcoss2/{self.root_directory}.{date_str}/{time_str}/atmos/"
 
         def get_data(s3_prefix, file_format, local_directory):
             # List objects in the S3 directory
             s3_objects = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=s3_prefix)
             for obj in s3_objects.get('Contents', []):
                 obj_key = obj['Key']
-                if obj_key.endswith(f'.{file_format}'):
+                if obj_key.endswith(f'{file_format}'):
+
                     # Define the local file path
                     local_file_path = os.path.join(local_directory, os.path.basename(obj_key))
 
@@ -74,10 +72,8 @@ class GFSDataProcessor:
 
                  
         for file_format in self.file_formats:
-            if file_format !='pgrb2.0p25.f006':
-                get_data(s3_prefix, file_format, local_directory)
-            else:
-                get_data(s3_prefix_precip, file_format, local_directory)
+            curr_file = f"ge{self.member}.t{time_str}z.{file_format}"
+            get_data(s3_prefix, curr_file, local_directory)
         
     def download_data(self):
         # Calculate the number of 6-hour intervals
@@ -562,7 +558,7 @@ if __name__ == "__main__":
         os.environ['AWS_CONFIG_FILE']=custom_config_file
     
     # check environment variables
-    if (download_source == 's3') & (os.environ.get('AWS_SHARED_CREDENTIALS_FILE') is None) | (os.environ.get('AWS_CONFIG_FILE') is None):
+    if (os.environ.get('AWS_SHARED_CREDENTIALS_FILE') is None) | (os.environ.get('AWS_CONFIG_FILE') is None):
         if os.environ.get('AWS_SHARED_CREDENTIALS_FILE') is None:
             raise ValueError('Please set up environment varialbes AWS_SHARED_CREDENTIALS_FILE')
         if os.environ.get('AWS_CONFIG_FILE') is None:
