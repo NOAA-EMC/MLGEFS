@@ -1,0 +1,35 @@
+[project]
+name = "mlgefs"
+version="0.1.0"
+description = "Implement Google DeepMind GenCast for Global Ensemble Forecast System (GEFS)"
+authors = [
+{name="Linlin Cui", email="linlin.cui@noaa.gov"},
+{name="Jun Wang", email="jun.wang@noaa.gov"},
+{name="Sadegh Tabas"},
+]
+license = {file = "LICENSE.txt"}
+requires-python = ">=3.11, <3.13"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "xarray",
+    "netCDF4",
+    "cartopy",
+    "pygrib",
+    "eccodes",
+    "iris",
+    "iris-grib",
+    "jupyterlab",
+    "dm-tree",
+    "boto3",
+]
+
+[project.urls]
+source="https://github.com/NOAA-EMC/MLGEFS"
+
+[build-system]
+requires = ["setuptools>=64.0.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["mlgefs"]

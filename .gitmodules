@@ -1,0 +1,3 @@
+[submodule "graphcast"]
+	path = graphcast
+	url = https://github.com/google-deepmind/graphcast.git
