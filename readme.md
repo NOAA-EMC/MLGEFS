@@ -53,7 +53,7 @@ This will install the packages and most of their dependencies.
 ## Usage
 ### Input data
 ```bash
-python gdas_utils.py YYYYMMDDHH -l 13 -m wgrib2(or pygrib) -s s3 -l /path/to/output -d /path/to/download -k no
+python gdas_utility.py YYYYMMDDHH -l 13 -m wgrib2(or pygrib) -s s3 -l /path/to/output -d /path/to/download -k no
 ````
 
 ### Run the model

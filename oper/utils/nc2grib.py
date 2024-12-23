@@ -20,6 +20,7 @@ class Netcdf2Grib:
             '10m_v_component_of_wind': [10, 'y_wind', 'm s**-1'],
             'mean_sea_level_pressure': [0, 'air_pressure_at_sea_level', 'Pa'],
             '2m_temperature': [2, 'air_temperature', 'K'],
+            'sea_surface_temperature': [0, 'sea_surface_temperature', 'K'],
             'total_precipitation_12hr': [0, 'precipitation_amount', 'kg m**-2'],
             'total_precipitation': [0, 'precipitation_amount', 'kg m**-2'],
             'vertical_velocity': [None, 'lagrangian_tendency_of_air_pressure', 'Pa s**-1'],

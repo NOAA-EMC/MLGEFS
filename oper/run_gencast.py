@@ -192,7 +192,7 @@ class GenCast:
 
         converter = Netcdf2Grib()
 
-        predictions = predictions.drop_vars('sea_surface_temperature')
+        #predictions = predictions.drop_vars('sea_surface_temperature')
 
         for im in range(predictions.shape[0]):
             dataset = predictions.isel(sample=im)
