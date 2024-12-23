@@ -23,7 +23,7 @@ class GFSDataProcessor:
     def __init__(
         self, 
         start_datetime: datetime = None, 
-        interval: Union[int, float, timedelta] = timedelta(days=12.0), 
+        interval: Union[int, float, timedelta] = 12.0, 
         num_pressure_levels: int = 13, 
         download_source = 'nomads', 
         output_directory = None, 
@@ -92,6 +92,9 @@ class GFSDataProcessor:
                 'levels': ['surface'],
                 #    'first_time_step_only': True,  # Extract only the first time step
                 },
+                'LAND': {
+                    'levels': ['surface'],
+                },
                 'TMP1': {
                     'levels': ['2 m above ground'],
                 },
@@ -109,9 +112,6 @@ class GFSDataProcessor:
                 },
             },
             'f006': {
-                'LAND': {
-                    'levels': ['surface'],
-                },
                 'APCP': {  # APCP
                     'levels': ['surface'],
                 },
@@ -164,7 +164,7 @@ class GFSDataProcessor:
                             # Open the extracted netcdf file as an xarray dataset
                             ds = xr.open_dataset(output_file)
 
-                            if varname == 'APCP' or varname == 'LAND':
+                            if varname == 'APCP':
                                 ds['time'] = ds['time'] - np.timedelta64(6, 'h')
 
                             # If specified, extract only the first time step
@@ -180,10 +180,11 @@ class GFSDataProcessor:
         print("Processing, Renaming and Reshaping the data")
         # Drop the 'level' dimension
         ds = ds.drop_dims('level')
-        ds['total_precipitation_12hr'] = ds['APCP_surface'].cumsum(axis=0)
-        ds['TMP_surface'][:] =  np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
 
-        ds = ds.drop_vars('APCP_surface')
+        ds['total_precipitation_12hr'] = ds['APCP_surface'].cumsum(axis=0)
+        s = ds.drop_vars('APCP_surface')
+
+        ds['TMP_surface'][:] =  np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
 
         ds = ds.sel(time=self.date_2steps)
 
@@ -199,7 +200,6 @@ class GFSDataProcessor:
             'TMP_surface': 'sea_surface_temperature',
             'UGRD_10maboveground': '10m_u_component_of_wind',
             'VGRD_10maboveground': '10m_v_component_of_wind',
-            #'APCP_surface': 'total_precipitation_6hr',
             'HGT': 'geopotential',
             'TMP': 'temperature',
             'SPFH': 'specific_humidity',
@@ -241,7 +241,7 @@ class GFSDataProcessor:
 
         if self.output_directory is None:
             self.output_directory = os.getcwd()  # Use current directory if not specified
-        output_netcdf = os.path.join(self.output_directory, f"source-gdas_date-{date}_res-0.25_levels-{self.num_levels}_steps-{steps}_masked.nc")
+        output_netcdf = os.path.join(self.output_directory, f"source-gdas_date-{date}_res-0.25_levels-{self.num_levels}_steps-{steps}.nc")
 
         # Save the merged dataset as a NetCDF file
         ds.to_netcdf(output_netcdf)
@@ -510,8 +510,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     start_datetime = datetime.strptime(args.start_datetime, "%Y%m%d%H")
-    #end_datetime = datetime.strptime(args.end_datetime, "%Y%m%d%H")
-    #days = timedelta(days=int(args.days))
     interval = float(args.interval)
     num_pressure_levels = int(args.levels)
     download_source = args.source

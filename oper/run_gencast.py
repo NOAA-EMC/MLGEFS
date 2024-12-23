@@ -262,7 +262,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     runner = GenCast(args.weights, args.input, args.output, int(args.pressure), int(args.length), args.member,)
-    #runner.get_predictions()
+    runner.get_predictions()
     
     upload_data = args.upload.lower() == "yes"
     keep_data = args.keep.lower() == "yes"
