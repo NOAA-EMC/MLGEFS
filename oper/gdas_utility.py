@@ -52,15 +52,13 @@ class GFSDataProcessor:
 
         current_datetime = self.start_datetime
         
-        while current_datetime >= (self.start_datetime - timedelta(days=1)):
-            print(current_datetime)
+        for current_datetime in self.date_2steps:
+            print(f'Download file for {current_datetime}')
 
             if self.download_source == 's3':
                 self.from_s3bucket(current_datetime)
             else:
                 self.nomads(current_datetime)
-
-            current_datetime -= timedelta(hours=6)
 
 
     def from_s3bucket(self, target_datetime):
@@ -69,19 +67,13 @@ class GFSDataProcessor:
         local_directory = pathlib.Path(f'{self.local_base_directory}/{timestr}')
         local_directory.mkdir(parents=True, exist_ok=True)
 
-        #s3_prefix = f'{self.root_directory}.{target_datetime.strftime("%Y%m%d")}/{target_datetime.strftime("%H")}/'
+        obj_key = f'{self.root_directory}.{timestr}/atmos/gdas.t{target_datetime.strftime("%H")}z.pgrb2.0p25.f000'
+        local_filename = f'{local_directory}/gdas.t{target_datetime.strftime("%H")}z.pgrb2.0p25.f000'
 
-        for fh in range(0, 12,  6):
-            obj_key = f'{self.root_directory}.{timestr}/atmos/gdas.t{target_datetime.strftime("%H")}z.pgrb2.0p25.f{fh:03d}'
-            local_filename = f'{local_directory}/gdas.t{target_datetime.strftime("%H")}z.pgrb2.0p25.f{fh:03d}'
-
-            print(obj_key)
-            print(local_filename)
-
-            try:
-                self.s3.download_file(self.bucket, obj_key, local_filename)
-            except:
-                print(f'Error in downloading file {obj_key}!')
+        try:
+            self.s3.download_file(self.bucket, obj_key, local_filename)
+        except:
+            print(f'Error in downloading file {obj_key}!')
 
     def process_data_with_wgrib2(self):
 
@@ -90,7 +82,6 @@ class GFSDataProcessor:
             'f000': {
                 'HGT': {
                 'levels': ['surface'],
-                #    'first_time_step_only': True,  # Extract only the first time step
                 },
                 'LAND': {
                     'levels': ['surface'],
@@ -111,22 +102,21 @@ class GFSDataProcessor:
                     'levels': ['(50|100|150|200|250|300|400|500|600|700|850|925|1000) mb'],
                 },
             },
-            'f006': {
-                'APCP': {  # APCP
-                    'levels': ['surface'],
-                },
-            },
+            # 'f006': {
+            #     'APCP': {  # APCP
+            #         'levels': ['surface'],
+            #     },
+            # },
         }
 
-        if self.num_levels == 37:
-            variables_to_extract[':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(125|175|225|775|825|875) mb:']
+        # if self.num_levels == 37:
+        #     variables_to_extract[':SPFH|VVEL|VGRD|UGRD|HGT|TMP:']['levels'] = [':(125|175|225|775|825|875) mb:']
        
         # Create an empty list to store the extracted datasets
         extracted_datasets = []
         files = []
         print("Start extracting variables and associated levels from grib2 files:")
-        # Loop through each folder (e.g., gdas.yyyymmdd)
-        #date_folders = sorted(next(os.walk(data_directory))[1])
+        
         for file_extension, variables_data in variables_to_extract.items():
 
             grib2_files = sorted(glob.glob(f'{self.local_base_directory}/**/*.{file_extension}', recursive=True))
@@ -136,8 +126,8 @@ class GFSDataProcessor:
 
                         if varname.startswith('TMP'):
                             varname2 = f':{varname[:-1]}:'
-                        elif varname == 'APCP':
-                            varname2 = '^(597):'
+                        # elif varname == 'APCP':
+                        #     varname2 = '^(597):'
                         else:
                             varname2 = f':{varname}:'
 
@@ -164,14 +154,13 @@ class GFSDataProcessor:
                             # Open the extracted netcdf file as an xarray dataset
                             ds = xr.open_dataset(output_file)
 
-                            if varname == 'APCP':
-                                ds['time'] = ds['time'] - np.timedelta64(6, 'h')
+                            # if varname == 'APCP':
+                            #     ds['time'] = ds['time'] - np.timedelta64(6, 'h')
 
                             # If specified, extract only the first time step
                             extracted_datasets.append(ds)
                             
-                            # Optionally, remove the intermediate GRIB2 file
-                            # os.remove(output_file)
+                           
         print("Merging grib2 files:")
         ds = xr.merge(extracted_datasets)
         
@@ -181,8 +170,14 @@ class GFSDataProcessor:
         # Drop the 'level' dimension
         ds = ds.drop_dims('level')
 
-        ds['total_precipitation_12hr'] = ds['APCP_surface'].cumsum(axis=0)
-        s = ds.drop_vars('APCP_surface')
+        # create a numpy array for tp
+        tp = np.zeros(ds['TMP_2maboveground'].shape)
+        ds['total_precipitation_12hr'] = xr.DataArray(
+            data=tp,
+            dims=ds['TMP_2maboveground'].dims,
+            coords=ds['TMP_2maboveground'].coords,    
+        )
+        #ds = ds.drop_vars('APCP_surface')
 
         ds['TMP_surface'][:] =  np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
 
@@ -232,16 +227,16 @@ class GFSDataProcessor:
         ds['geopotential'] = ds['geopotential'] * 9.80665
 
         # Update total_precipitation_6hr unit to (m) from (kg/m^2) by dividing it by 1000kg/m³
-        ds['total_precipitation_12hr'] = ds['total_precipitation_12hr'] / 1000
+        #ds['total_precipitation_12hr'] = ds['total_precipitation_12hr'] / 1000
 
         
         # Define the output NetCDF file
-        date = self.start_datetime.strftime('%Y%m%d%H')
+        #date = self.start_datetime.strftime('%Y%m%d%H')
         steps = str(len(ds['time']))
 
         if self.output_directory is None:
             self.output_directory = os.getcwd()  # Use current directory if not specified
-        output_netcdf = os.path.join(self.output_directory, f"source-gdas_date-{date}_res-0.25_levels-{self.num_levels}_steps-{steps}.nc")
+        output_netcdf = os.path.join(self.output_directory, f"source-gdas_date-{self.start_datetime.strftime('%Y%m%d%H')}_res-0.25_levels-{self.num_levels}_steps-{steps}.nc")
 
         # Save the merged dataset as a NetCDF file
         ds.to_netcdf(output_netcdf)
@@ -284,82 +279,57 @@ class GFSDataProcessor:
                     'level': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000],
                 },
             },
-            'f006': {
-                'tp': {  # total precipitation 
-                    'typeOfLevel': 'surface',
-                    'level': 0,
-                },
-            }
+            # 'f006': {
+            #     'tp': {  # total precipitation 
+            #         'typeOfLevel': 'surface',
+            #         'level': 0,
+            #     },
+            # }
         }
 
         # Create an empty list to store the extracted datasets
         mergeDSs = []
         print("Start extracting variables and associated levels from grib2 files:")
-        # Loop through each folder (e.g., gdas.yyyymmdd)
-        date_folders = sorted(next(os.walk(data_directory))[1])
-        for date_folder in date_folders:
-            date_folder_path = os.path.join(data_directory, date_folder)
+      
+        for file_extension, variables_data in variables_to_extract.items():
 
-            # Loop through each hour (e.g., '00', '06', '12', '18')
-            for hour in ['00', '06', '12', '18']:
-                subfolder_path = os.path.join(date_folder_path, hour)
+            grib2_files = sorted(glob.glob(f'{self.local_base_directory}/**/*.{file_extension}', recursive=True))
 
-                # Check if the subfolder exists before processing
-                if os.path.exists(subfolder_path):
+            for fname in grib2_files:
+                grbs = pygrib.open(fname)
 
-                    mergeDAs = []
+                mergeDAs = []
 
-                    for file_extension, variables in variables_to_extract.items():
-                        pattern = os.path.join(subfolder_path, f'gdas.t*{file_extension}')
-                        # Use glob to search for files matching the pattern
-                        matching_files = glob.glob(pattern)
-                        
-                        # Check if there's exactly one matching file
-                        if len(matching_files) == 1:
-                            fname = matching_files[0]
-                            print("Found file:", fname)
-                        else:
-                            print("Error: Found multiple or no matching files.")
+                for key, value in variables_data.items():
 
-                        #open grib file
-                        grbs = pygrib.open(fname)
+                    variable_names = key.split(', ')
+                    levelType = value['typeOfLevel']
+                    desired_level = value['level']
+            
+                    for var_name in variable_names:
 
-                        for key, value in variables.items():
+                        print(f'Get variable {var_name} from file {fname}:')
+                        da = self.get_dataarray(grbs, var_name, levelType, desired_level)
 
-                            variable_names = key.split(', ')
-                            levelType = value['typeOfLevel']
-                            desired_level = value['level']
-                    
-                            for var_name in variable_names:
+                        mergeDAs.append(da)
 
-                                print(f'Get variable {var_name} from file {fname}:')
-                                da = self.get_dataarray(grbs, var_name, levelType, desired_level)
+                ds = xr.merge(mergeDAs)
 
-                                print(f'var {var_name}, time is {da.time}')
-                                mergeDAs.append(da)
-
-                    ds = xr.merge(mergeDAs)
-
-                    mergeDSs.append(ds)
-                    ds.close()
+                mergeDSs.append(ds)
+                ds.close()
 
         #Concatenate ds
         ds = xr.concat(mergeDSs, dim='time')
 
-        # #Get 2D static variables
-        # grbfiles = glob.glob(f'{data_directory}/*/*/*.f000')
-        # grbfiles.sort()
-        # #Get lsm/orog from the first file
-        # grbs = pygrib.open(grbfiles[0])
-        # levelType = 'surface'
-        # desired_level = 0
-        # for var_name in ['lsm', 'orog']:
-        #     da = self.get_dataarray(grbs, var_name, levelType, desired_level)
-        #     ds = xr.merge([ds, da])
+        # create a numpy array for tp
+        tp = np.zeros(ds['2t'].shape)
+        ds['total_precipitation_12hr'] = xr.DataArray(
+            data=tp,
+            dims=ds['2t'].dims,
+            coords=ds['2t'].coords,    
+        )
 
-        ds['total_precipitation_12hr'] = ds['tp'].cumsum(axis=0)
         ds['tmpsfc'][:] =  np.ma.masked_array(ds['tmpsfc'], ds['lsm'])
-        ds.drop_vars('tp')
 
         ds = ds.sel(time=self.date_2steps)
         
@@ -397,7 +367,7 @@ class GFSDataProcessor:
         ds['geopotential'] = ds['geopotential'] * 9.80665
 
         # Update total_precipitation_6hr unit to (m) from (kg/m^2) by dividing it by 1000kg/m³
-        ds['total_precipitation_12hr'] = ds['total_precipitation_12hr'] / 1000
+        #ds['total_precipitation_12hr'] = ds['total_precipitation_12hr'] / 1000
 
         # Define the output NetCDF file
         #date = (self.start_datetime + timedelta(hours=6)).strftime('%Y%m%d%H')
