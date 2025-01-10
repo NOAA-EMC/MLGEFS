@@ -120,14 +120,14 @@ class GenCast:
 
     def load_model(self):
         #Build jitted functions, and possibly initialize ramdom weights
-        def construct_wrapped_gencast(sampler_config, task_config, denoiser_architecture_config, noise_config, noise_encoder_config):
+        def construct_wrapped_gencast():
             """Constructs and wraps the GenCast Predictor."""
             predictor = gencast.GenCast(
-                sampler_config=sampler_config,
-                task_config=task_config,
-                denoiser_architecture_config=denoiser_architecture_config,
-                noise_config=noise_config,
-                noise_encoder_config=noise_encoder_config,
+                sampler_config=self.sampler_config,
+                task_config=self.task_config,
+                denoiser_architecture_config=self.denoiser_architecture_config,
+                noise_config=self.noise_config,
+                noise_encoder_config=self.noise_encoder_config,
             )
 
             predictor = normalization.InputsAndResiduals(
@@ -185,6 +185,9 @@ class GenCast:
             chunks.append(chunk)
 
         predictions = xr.combine_by_coords(chunks)
+        # outnc_fname = f'forecast-gdas_{"_".join(self.gdas_data_path.split("_")[1:4])}_{self.num_ensemble_members}members.nc'
+        # print(f'output filename {outnc_fname}')
+        # predictions.to_netcdf(outnc_fname)
         
         self.save_outputs(predictions)
 
@@ -194,9 +197,8 @@ class GenCast:
 
         #predictions = predictions.drop_vars('sea_surface_temperature')
 
-        for im in range(predictions.shape[0]):
+        for im in range(self.num_ensemble_members):
             dataset = predictions.isel(sample=im)
-            #predictions.to_netcdf(f'forecast_gdas_2024022700_{num_ensemble_members}members_{forecast_length}steps.nc')
             converter.save_grib2(self.dates, dataset, im, self.output_dir)
 
     """  def upload_to_s3(self, keep_data):
@@ -261,7 +263,7 @@ if __name__ == "__main__":
     parser.add_argument("-k", "--keep", help="keep input and output after uploading to noaa s3 bucket (yes or no)", default = "no")
     
     args = parser.parse_args()
-    runner = GenCast(args.weights, args.input, args.output, int(args.pressure), int(args.length), args.member,)
+    runner = GenCast(args.weights, args.input, args.output, int(args.pressure), int(args.length), int(args.member))
     runner.get_predictions()
     
     upload_data = args.upload.lower() == "yes"

@@ -29,6 +29,7 @@ class GFSDataProcessor:
         output_directory = None, 
         download_directory = None, 
         keep_downloaded_data: bool = True, 
+        min_sst = 269.9,
     ):
         self.start_datetime = start_datetime
         self.interval = interval if isinstance(interval, timedelta) else timedelta(hours=interval)
@@ -37,6 +38,7 @@ class GFSDataProcessor:
         self.output_directory = output_directory
         self.download_directory = download_directory
         self.keep_downloaded_data = keep_downloaded_data
+        self.min_sst = min_sst
 
         self.root_directory = 'gdas'
 
@@ -90,6 +92,9 @@ class GFSDataProcessor:
                     'levels': ['2 m above ground'],
                 },
                 'TMP2': {
+                    'levels': ['surface'],
+                },
+                'ICETMP': {
                     'levels': ['surface'],
                 },
                 'PRMSL': {
@@ -179,7 +184,11 @@ class GFSDataProcessor:
         )
         #ds = ds.drop_vars('APCP_surface')
 
-        ds['TMP_surface'][:] =  np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
+        
+        ds['TMP_surface'].values[~np.isnan(ds.ICETMP_surface)] = self.min_sst
+        ds['TMP_surface'][:] = np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
+
+        ds = ds.drop_vars('ICETMP_surface')
 
         ds = ds.sel(time=self.date_2steps)
 
