@@ -146,12 +146,10 @@ class GenCast:
 
             return predictor
 
-
         @hk.transform_with_state
         def run_forward(inputs, targets_template, forcings):
           predictor = construct_wrapped_gencast()
           return predictor(inputs, targets_template=targets_template, forcings=forcings)
-
 
         self.run_forward_jitted = jax.jit(
             lambda rng, i, t, f: run_forward.apply(self.params, self.state, rng, i, t, f)[0]
@@ -185,7 +183,7 @@ class GenCast:
             chunks.append(chunk)
 
         predictions = xr.combine_by_coords(chunks)
-        # outnc_fname = f'forecast-gdas_{"_".join(self.gdas_data_path.split("_")[1:4])}_{self.num_ensemble_members}members.nc'
+        # outnc_fname = f'forecast-gdas_{"_".join(self.gdas_data_path.split("_")[1:4])}_{self.num_ensemble_members}members_minsst.nc'
         # print(f'output filename {outnc_fname}')
         # predictions.to_netcdf(outnc_fname)
         
@@ -194,8 +192,6 @@ class GenCast:
     def save_outputs(self, predictions):
 
         converter = Netcdf2Grib()
-
-        #predictions = predictions.drop_vars('sea_surface_temperature')
 
         for im in range(self.num_ensemble_members):
             dataset = predictions.isel(sample=im)

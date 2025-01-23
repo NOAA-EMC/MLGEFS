@@ -15,9 +15,6 @@ import numpy as np
 from botocore.config import Config
 from botocore import UNSIGNED
 import pygrib
-#import requests
-#from bs4 import BeautifulSoup
-
 
 class GFSDataProcessor:
     def __init__(
@@ -25,7 +22,7 @@ class GFSDataProcessor:
         start_datetime: datetime = None, 
         interval: Union[int, float, timedelta] = 12.0, 
         num_pressure_levels: int = 13, 
-        download_source = 'nomads', 
+        download_source = 's3', 
         output_directory = None, 
         download_directory = None, 
         keep_downloaded_data: bool = True, 
@@ -52,16 +49,14 @@ class GFSDataProcessor:
 
     def download_data(self):
 
-        current_datetime = self.start_datetime
-        
         for current_datetime in self.date_2steps:
             print(f'Download file for {current_datetime}')
 
             if self.download_source == 's3':
                 self.from_s3bucket(current_datetime)
             else:
-                self.nomads(current_datetime)
-
+                #self.from_nomads(current_datetime)
+                raise NotImplementedError(f"Download GDAS from NOMADS is not implemented yet!")
 
     def from_s3bucket(self, target_datetime):
 
@@ -159,9 +154,6 @@ class GFSDataProcessor:
                             # Open the extracted netcdf file as an xarray dataset
                             ds = xr.open_dataset(output_file)
 
-                            # if varname == 'APCP':
-                            #     ds['time'] = ds['time'] - np.timedelta64(6, 'h')
-
                             # If specified, extract only the first time step
                             extracted_datasets.append(ds)
                             
@@ -182,8 +174,6 @@ class GFSDataProcessor:
             dims=ds['TMP_2maboveground'].dims,
             coords=ds['TMP_2maboveground'].coords,    
         )
-        #ds = ds.drop_vars('APCP_surface')
-
         
         ds['TMP_surface'].values[~np.isnan(ds.ICETMP_surface)] = self.min_sst
         ds['TMP_surface'][:] = np.ma.masked_array(ds['TMP_surface'], ds['LAND_surface'])
@@ -278,7 +268,7 @@ class GFSDataProcessor:
                     'typeOfLevel': 'heightAboveGround',
                     'level': 10,
                 },
-                't, orog, lsm': {
+                't, sit, orog, lsm': {
                     'typeOfLevel': 'surface',
                     'level': 0,
                     
@@ -338,7 +328,9 @@ class GFSDataProcessor:
             coords=ds['2t'].coords,    
         )
 
-        ds['tmpsfc'][:] =  np.ma.masked_array(ds['tmpsfc'], ds['lsm'])
+        ds['tmpsfc'].values[~np.isnan(ds.sit)] = self.min_sst
+        ds['tmpsfc'][:] = np.ma.masked_array(ds['tmpsfc'], ds['lsm'])
+        ds = ds.drop_vars('sit')
 
         ds = ds.sel(time=self.date_2steps)
         
