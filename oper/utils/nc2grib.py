@@ -36,6 +36,9 @@ class Netcdf2Grib:
         Adjust GRIB messages based on cube properties.
         """
         for cube, grib_message in iris_grib.save_pairs_from_cube(cube):
+
+            eccodes.codes_set(grib_message, 'centre', 'kwbc')
+
             if cube.standard_name == 'precipitation_amount':
                 eccodes.codes_set(grib_message, 'stepType', 'accum')
                 eccodes.codes_set(grib_message, 'stepRange', time_range)
@@ -44,11 +47,18 @@ class Netcdf2Grib:
                 eccodes.codes_set(grib_message, 'parameterNumber', 8)
                 eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 1)
                 eccodes.codes_set(grib_message, 'typeOfStatisticalProcessing', 1)
+
             elif cube.standard_name == 'air_pressure_at_sea_level':
                 eccodes.codes_set(grib_message, 'discipline', 0)
                 eccodes.codes_set(grib_message, 'parameterCategory', 3)
                 eccodes.codes_set(grib_message, 'parameterNumber', 1)
                 eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 101)
+
+            elif cube.standard_name == 'sea_surface_temperature':
+                eccodes.codes_set(grib_message, 'discipline', 10)
+                eccodes.codes_set(grib_message, 'parameterCategory', 3)
+                eccodes.codes_set(grib_message, 'parameterNumber', 0)
+                eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 1)
         yield grib_message
 
     def save_grib2(self, dates, forecasts, gefs_member, outdir):
@@ -127,10 +137,10 @@ class Netcdf2Grib:
                     cube_slice.standard_name = self.ATTR_MAPS[var_name][1]
                     cube_slice.units = self.ATTR_MAPS[var_name][2]
 
-                    if var_name not in ['mean_sea_level_pressure', 'total_precipitation_12hr', 'total_precipitation']:
+                    if var_name not in ['mean_sea_level_pressure', 'total_precipitation_12hr', 'total_precipitation', 'sea_surface_temperature']:
                         cube_slice.add_aux_coord(iris.coords.DimCoord(self.ATTR_MAPS[var_name][0], standard_name='height', units='m'))
                         iris.save(cube_slice, outfile, saver='grib2', append=True)
-                    elif var_name == 'total_precipitation_12hr':
+                    elif var_name in ['total_precipitation_12hr', 'sea_surface_temperature']:
                         iris_grib.save_messages(self.tweaked_messages(cube_slice, f'{hrs-12}-{hrs}'), outfile, append=True)
                     elif var_name == 'total_precipitation':
                         iris_grib.save_messages(self.tweaked_messages(cube_slice, f'0-{hrs}'), outfile, append=True)

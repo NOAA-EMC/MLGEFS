@@ -66,4 +66,6 @@ python run_gencast.py -i /path/to/inputfile -w /path/to/model/ -l lead_time(step
 
 ## Contact
 
-For questions or issues, please contact [Sadegh.Tabas@noaa.gov](mailto:Sadegh.Tabas@noaa.gov).
+For questions or issues, please contact:
+    [Linlin.Cui@noaa.gov](mailto:Linlin.Cui@noaa.gov)
+    [Jun.Wang@noaa.gov](mailto:Jun.Wang@noaa.gov)
