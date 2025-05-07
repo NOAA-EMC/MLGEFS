@@ -16,3 +16,4 @@ dependencies:
   - pip
   - pip:
     - https://github.com/deepmind/graphcast/archive/master.zip
+    - flax

@@ -1,7 +1,10 @@
 """ Utility for converting netcdf data to grib2.
 
     History:
-        03/07/2024: Sadegh Tabas initial code
+        01/26/2024: Linlin Cui (linlin.cui@noaa.gov), added function save_grib2 
+        02/05/2024: Sadegh Tabas update the utility to a object-oriented format
+        04/25/2024: Sadegh Tabas, generate grib2 index files
+        07/03/2024: Sadegh Tabas, sorted grib2 variables
 """
 
 import os
@@ -20,9 +23,8 @@ class Netcdf2Grib:
             '10m_v_component_of_wind': [10, 'y_wind', 'm s**-1'],
             'mean_sea_level_pressure': [0, 'air_pressure_at_sea_level', 'Pa'],
             '2m_temperature': [2, 'air_temperature', 'K'],
-            'sea_surface_temperature': [0, 'sea_surface_temperature', 'K'],
-            'total_precipitation_12hr': [0, 'precipitation_amount', 'kg m**-2'],
-            'total_precipitation': [0, 'precipitation_amount', 'kg m**-2'],
+            'total_precipitation_6hr': [0, 'precipitation_amount', 'kg m**-2'],
+            'total_precipitation_cumsum': [0, 'precipitation_amount', 'kg m**-2'],
             'vertical_velocity': [None, 'lagrangian_tendency_of_air_pressure', 'Pa s**-1'],
             'specific_humidity': [None, 'specific_humidity', 'kg kg**-1'],
             'temperature': [None, 'air_temperature', 'K'],
@@ -36,9 +38,6 @@ class Netcdf2Grib:
         Adjust GRIB messages based on cube properties.
         """
         for cube, grib_message in iris_grib.save_pairs_from_cube(cube):
-
-            eccodes.codes_set(grib_message, 'centre', 'kwbc')
-
             if cube.standard_name == 'precipitation_amount':
                 eccodes.codes_set(grib_message, 'stepType', 'accum')
                 eccodes.codes_set(grib_message, 'stepRange', time_range)
@@ -47,20 +46,14 @@ class Netcdf2Grib:
                 eccodes.codes_set(grib_message, 'parameterNumber', 8)
                 eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 1)
                 eccodes.codes_set(grib_message, 'typeOfStatisticalProcessing', 1)
-
             elif cube.standard_name == 'air_pressure_at_sea_level':
                 eccodes.codes_set(grib_message, 'discipline', 0)
                 eccodes.codes_set(grib_message, 'parameterCategory', 3)
                 eccodes.codes_set(grib_message, 'parameterNumber', 1)
                 eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 101)
-
-            elif cube.standard_name == 'sea_surface_temperature':
-                eccodes.codes_set(grib_message, 'discipline', 10)
-                eccodes.codes_set(grib_message, 'parameterCategory', 3)
-                eccodes.codes_set(grib_message, 'parameterNumber', 0)
-                eccodes.codes_set(grib_message, 'typeOfFirstFixedSurface', 1)
         yield grib_message
 
+    #def save_grib2(self, dates, forecasts, outdir):
     def save_grib2(self, dates, forecasts, gefs_member, outdir):
         """
         Convert netCDF file to GRIB2 format file.
@@ -83,9 +76,11 @@ class Netcdf2Grib:
         forecasts['level'].attrs['long_name'] = 'pressure'
         forecasts['level'].attrs['units'] = 'Pa'
         forecasts['geopotential'] = forecasts['geopotential'] / 9.80665
-        forecasts['total_precipitation_12hr'] = forecasts['total_precipitation_12hr'] * 1000
-        forecasts['total_precipitation'] = forecasts['total_precipitation_12hr'].cumsum(axis=0)
+        if 'total_precipitation_6hr' in forecasts:
+            forecasts['total_precipitation_6hr'] = forecasts['total_precipitation_6hr'] * 1000
+            forecasts['total_precipitation_cumsum'] = forecasts['total_precipitation_6hr'].cumsum(axis=0)
 
+        #filename = os.path.join(outdir, "forecast_to_grib2.nc")
         filename = os.path.join(outdir, f"forecast_to_grib2_{gefs_member}.nc")
         forecasts.to_netcdf(filename)
 
@@ -108,10 +103,11 @@ class Netcdf2Grib:
         for date in datevectors:
             print(f"Processing for time {date.strftime('%Y-%m-%d %H:00:00')}")
             hrs = int((date - forecast_starttime).total_seconds() // 3600)
-            outfile = os.path.join(outdir, f'gencastge{gefs_member:02d}.t{cycle:02d}z.pgrb2.0p25.f{hrs:03d}')
+            #outfile = os.path.join(outdir, f'graphcastgfs.t{cycle:02d}z.pgrb2.0p25.f{hrs:03d}')
+            outfile = os.path.join(outdir, f'pmlgefs{gefs_member}.t{cycle:02d}z.pgrb2.0p25.f{hrs:03d}')
             print(outfile)
 
-            for cube in cubes:
+            for cube in sorted(cubes, key=lambda cube: cube.name()):
                 var_name = cube.name()
 
                 # Adjust cube for different variables
@@ -119,8 +115,8 @@ class Netcdf2Grib:
                 cube.remove_coord('time')
                 cube.add_dim_coord(new_time_coord, time_coord_dim)
 
-                hour_12 = iris.Constraint(time=iris.time.PartialDateTime(month=date.month, day=date.day, hour=date.hour))
-                cube_slice = cube.extract(hour_12)
+                hour_6 = iris.Constraint(time=iris.time.PartialDateTime(month=date.month, day=date.day, hour=date.hour))
+                cube_slice = cube.extract(hour_6)
                 cube_slice.coord('latitude').coord_system = iris.coord_systems.GeogCS(4326)
                 cube_slice.coord('longitude').coord_system = iris.coord_systems.GeogCS(4326)
 
@@ -137,16 +133,34 @@ class Netcdf2Grib:
                     cube_slice.standard_name = self.ATTR_MAPS[var_name][1]
                     cube_slice.units = self.ATTR_MAPS[var_name][2]
 
-                    if var_name not in ['mean_sea_level_pressure', 'total_precipitation_12hr', 'total_precipitation', 'sea_surface_temperature']:
+                    if var_name not in ['mean_sea_level_pressure', 'total_precipitation_6hr', 'total_precipitation_cumsum']:
                         cube_slice.add_aux_coord(iris.coords.DimCoord(self.ATTR_MAPS[var_name][0], standard_name='height', units='m'))
                         iris.save(cube_slice, outfile, saver='grib2', append=True)
-                    elif var_name in ['total_precipitation_12hr', 'sea_surface_temperature']:
-                        iris_grib.save_messages(self.tweaked_messages(cube_slice, f'{hrs-12}-{hrs}'), outfile, append=True)
-                    elif var_name == 'total_precipitation':
+                    elif var_name == 'total_precipitation_6hr':
+                        iris_grib.save_messages(self.tweaked_messages(cube_slice, f'{hrs-6}-{hrs}'), outfile, append=True)
+                    elif var_name == 'total_precipitation_cumsum':
                         iris_grib.save_messages(self.tweaked_messages(cube_slice, f'0-{hrs}'), outfile, append=True)
                     elif var_name == 'mean_sea_level_pressure':
                         cube_slice.add_aux_coord(iris.coords.DimCoord(self.ATTR_MAPS[var_name][0], standard_name='altitude', units='m'))
-                        iris_grib.save_messages(self.tweaked_messages(cube_slice, f'{hrs-12}-{hrs}'), outfile, append=True)
+                        iris_grib.save_messages(self.tweaked_messages(cube_slice, f'{hrs-6}-{hrs}'), outfile, append=True)
+
+            # Use wgrib2 to generate index files
+            output_idx_file = f"{outfile}.idx"
+            
+            # Construct the wgrib2 command
+            wgrib2_command = ['wgrib2', '-s', outfile]
+            
+            try:
+                # Open the output file for writing
+                with open(output_idx_file, "w") as f_out:
+                    # Execute the wgrib2 command and redirect stdout to the output file
+                    subprocess.run(wgrib2_command, stdout=f_out, check=True)
+            
+                print(f"Index file created successfully: {output_idx_file}")
+            
+            except subprocess.CalledProcessError as e:
+                print(f"Error running wgrib2 command: {e}")
+    
 
         # Remove intermediate netCDF file
         if os.path.isfile(filename):
