@@ -81,19 +81,27 @@ echo "start runing graphcast to get real time 10-days forecasts for: $curr_datet
 # Run another Python script
 python3 run_graphcast_ens.py -i /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/source-ge"$gefs_member"_date-"$curr_datetime"_res-0.25_levels-"$num_pressure_levels"_steps-2.nc -o /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/ -w /contrib/graphcast/NCEP -m "$gefs_member" -c "$config_path" -l "$forecast_length" -p "$num_pressure_levels" -u no -k yes
 
-end_time=$(date +%s)  # Record the end time in seconds since the epoch
-
-# Calculate and print the execution time
-execution_time=$((end_time - start_time))
-echo "Execution time for graphcast: $execution_time seconds"
-
 # Upload to s3 bucekt
 cd /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"
-../job.sh
+#move input file to input/
+#../job.sh 
+
+#delete input file so that save the cost of uploading
+rm source-ge"$gefs_member"_date-"$curr_datetime"_res-0.25_levels-"$num_pressure_levels"_steps-2.nc
 cd ..
 
 ## Extract the date and hour parts
 ymd=${curr_datetime:0:8}
 hour=${curr_datetime:8:2}
+
+#upload to noaa-nws-graphcastgfs-pds
 aws s3 --profile gcgfs sync $curr_datetime/forecasts_13_levels_${gefs_member}_model_${model_id}/ s3://noaa-nws-graphcastgfs-pds/EAGLE_ensemble/pmlgefs."$ymd"/"$hour"/forecasts_13_levels_${gefs_member}_model_${model_id}/
-#aws s3 sync $curr_datetime s3://noaa-ncepdev-none-ca-ufs-cpldcld/Linlin.Cui/MLGEFS/$curr_datetime
+
+#upload to noaa-ncepdev-none-ca-ufs-cpldcld
+#aws s3 sync $curr_datetime/forecasts_13_levels_${gefs_member}_model_${model_id}/ s3://noaa-ncepdev-none-ca-ufs-cpldcld/Linlin.Cui/MLGEFS/pmlgefs."$ymd"/"$hour"/forecasts_13_levels_${gefs_member}_model_${model_id}/
+
+end_time=$(date +%s)  # Record the end time in seconds since the epoch
+
+# Calculate and print the execution time
+execution_time=$((end_time - start_time))
+echo "Execution time for running graphcast and uploading to the bucket: $execution_time seconds"

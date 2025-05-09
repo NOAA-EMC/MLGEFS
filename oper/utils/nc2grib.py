@@ -37,7 +37,11 @@ class Netcdf2Grib:
         """
         Adjust GRIB messages based on cube properties.
         """
+
         for cube, grib_message in iris_grib.save_pairs_from_cube(cube):
+
+            eccodes.codes_set(grib_message, 'centre', 'kwbc')
+
             if cube.standard_name == 'precipitation_amount':
                 eccodes.codes_set(grib_message, 'stepType', 'accum')
                 eccodes.codes_set(grib_message, 'stepRange', time_range)
@@ -77,7 +81,7 @@ class Netcdf2Grib:
         forecasts['level'].attrs['units'] = 'Pa'
         forecasts['geopotential'] = forecasts['geopotential'] / 9.80665
         if 'total_precipitation_6hr' in forecasts:
-            forecasts['total_precipitation_6hr'] = forecasts['total_precipitation_6hr'] * 1000
+            forecasts['total_precipitation_6hr'] = (forecasts['total_precipitation_6hr'].clip(min=0)) * 1000
             forecasts['total_precipitation_cumsum'] = forecasts['total_precipitation_6hr'].cumsum(axis=0)
 
         #filename = os.path.join(outdir, "forecast_to_grib2.nc")
