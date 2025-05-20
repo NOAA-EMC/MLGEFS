@@ -1,4 +1,4 @@
-name: graphcast
+name: mlgefs
 channels:
   - conda-forge
 dependencies:
@@ -9,7 +9,7 @@ dependencies:
   - cartopy
   - pygrib
   - eccodes
-  - iris
+  - scitools-iris
   - iris-grib
   - jupyterlab
   - boto3
