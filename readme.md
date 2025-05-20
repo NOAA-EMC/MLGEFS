@@ -23,7 +23,7 @@ conda env create -f environment.yml
 
 To activate the env:
 ```bash
-conda activate mlgefs
+conda activate graphcast
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ python gen_gefs_ics.py prev_datetime curr_datetime gefs_member -l 13 -o /path/to
 ```bash
 python run_graphcast_ens.py -i /path/to/inputfile -o /path/to/output -w model_weights/stats -m gefs_member -c model_weights/params  -l forecast_length(steps) -p num_pressure_levels -u no -k yes
 ```
-Slurm jobs for 31 members can be submitted with the following python script:
+Slurm jobs for 31 members can be submitted with `oper/submit_jobs.py`. Change the env path in `oper/gcjob_cloud_ens.sh` accordingly, then run the script:
 ```bash
 python submit_jobs.py -w model_weights/params
 ```

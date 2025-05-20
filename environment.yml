@@ -1,4 +1,4 @@
-name: mlgefs
+name: graphcast
 channels:
   - conda-forge
 dependencies:
