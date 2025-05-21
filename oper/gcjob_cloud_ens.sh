@@ -43,14 +43,14 @@ num_pressure_levels=13
 echo "number of pressure levels: $num_pressure_levels"
 
 # Activate Conda environment
-source /lustre2/Linlin.Cui/miniforge3/etc/profile.d/conda.sh
+source /lustre/EAGLE_ensemble/miniforge3/etc/profile.d/conda.sh
 conda activate graphcast
 
 start_time=$(date +%s)
 echo "start runing gdas utility to generate graphcast inputs for: $curr_datetime"
 
 # Run the Python script gdas.py with the calculated times
-python3 gen_gefs_ics.py "$prev_datetime" "$curr_datetime" "$gefs_member" -l "$num_pressure_levels" -o /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/ -d /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/
+python3 gen_gefs_ics.py "$prev_datetime" "$curr_datetime" "$gefs_member" -l "$num_pressure_levels" -o /lustre/EAGLE_ensemble/"$curr_datetime"/ -d /lustre/EAGLE_ensemble/"$curr_datetime"/
 
 end_time=$(date +%s)  # Record the end time in seconds since the epoch
 
@@ -61,10 +61,10 @@ echo "Execution time for gdas_utility.py: $execution_time seconds"
 start_time=$(date +%s)
 echo "start runing graphcast to get real time 10-days forecasts for: $curr_datetime"
 # Run another Python script
-python3 run_graphcast_ens.py -i /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/source-ge"$gefs_member"_date-"$curr_datetime"_res-0.25_levels-"$num_pressure_levels"_steps-2.nc -o /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/ -w /contrib/graphcast/NCEP -m "$gefs_member" -c "$config_path" -l "$forecast_length" -p "$num_pressure_levels" -u no -k yes
+python3 run_graphcast_ens.py -i /lustre/EAGLE_ensemble/"$curr_datetime"/source-ge"$gefs_member"_date-"$curr_datetime"_res-0.25_levels-"$num_pressure_levels"_steps-2.nc -o /lustre/EAGLE_ensemble/"$curr_datetime"/ -w /lustre/EAGLE_ensemble -m "$gefs_member" -c "$config_path" -l "$forecast_length" -p "$num_pressure_levels" -u no -k yes
 
 # Upload to s3 bucekt
-cd /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"
+cd /lustre/EAGLE_ensemble/"$curr_datetime"
 #move input file to input/
 #../job.sh 
 
