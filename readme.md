@@ -1,5 +1,5 @@
-# MLGEFS: Machine Learning-based Global Ensemble Forecast System
-This package contains scripts to run an ensemble-based cascaded version of the GraphCast weather model for the Global Ensemble Forecast System (GEFS). It also provides the pre-trained model (weights) to run MLGEFS:
+# Global EAGLE ensemble
+This project is part of Experimental AI Global and Limited-area Ensemble project (EAGLE), which is ensemble GraphCast tuned on GDAS and initialized with GEFSv12. This repo contains scripts to run an ensemble-based cascaded version of the GraphCast weather model for the Global Ensemble Forecast System (GEFS). [Model weights](https://noaa-nws-graphcastgfs-pds.s3.amazonaws.com/index.html#EAGLE_ensemble/model_weights/) were obtained from training/finetuning GraphCast on GDAS dataset.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -10,7 +10,7 @@ This package contains scripts to run an ensemble-based cascaded version of the G
 
 ## Overview
 
-The National Centers for Environmental Prediction (NCEP) provides GEFS data that can be used for ensemble weather prediction and analysis. Currently, a cron job is set up to transfer GEFS data to `NOAA-NCEPDEV-NONE-CA-UFS-CPLDCLD`
+The National Centers for Environmental Prediction (NCEP) provides GEFS data that can be used for ensemble weather prediction and analysis. Currently, a cron job is set up to transfer GEFS data from WCOSS2 to `NOAA-NCEPDEV-NONE-CA-UFS-CPLDCLD`
 bucket. 
 
 ## Installation
@@ -43,11 +43,11 @@ python run_graphcast_ens.py -i /path/to/inputfile -o /path/to/output -w model_we
 ```
 Slurm jobs for 31 members can be submitted with `oper/submit_jobs.py`. Change the env path in `oper/gcjob_cloud_ens.sh` accordingly, then run the script:
 ```bash
-python submit_jobs.py -w model_weights/params
+python submit_jobs.py -w /path/to/ens_weights
 ```
 
 ## Contact
 
 For questions or issues, please contact:
-    [Linlin.Cui@noaa.gov](mailto:Linlin.Cui@noaa.gov)
+    [Linlin.Cui@noaa.gov](mailto:Linlin.Cui@noaa.gov)\
     [Jun.Wang@noaa.gov](mailto:Jun.Wang@noaa.gov)

@@ -1,96 +1,95 @@
 {
     "0": {
-        "params": "Final/run_14AR/params_epoch_140_loss_3.2722_val_loss_3.3601.pkl"
+        "params": "ens_weights/member0.pkl"
     },
-
     "1": {
-        "params": "Final/run_14AR/params_epoch_12_loss_3.4348_val_loss_0.0000.pkl"
+        "params": "ens_weights/member1.pkl"
     },
     "2": {
-        "params": "Final/run_14AR/params_epoch_10_loss_3.4092_val_loss_3.4886.pkl"
+        "params": "ens_weights/member2.pkl"
     },
     "3": {
-        "params": "Final/run_14AR/params_epoch_8_loss_3.4776_val_loss_0.0000.pkl"
+        "params": "ens_weights/member3.pkl"
     },
     "4": {
-        "params": "Final/run_14AR/params_epoch_6_loss_3.4358_val_loss_0.0000.pkl"
+        "params": "ens_weights/member4.pkl"
     },
     "5": {
-        "params": "Final/run_13AR/params_epoch_70_loss_3.3520_val_loss_3.3474.pkl"
+        "params": "ens_weights/member5.pkl"
     },
     "6": {
-        "params": "Final/run_13AR/params_epoch_60_loss_3.3377_val_loss_3.3761.pkl"
+        "params": "ens_weights/member6.pkl"
     },
     "7": {
-        "params": "Final/run_13AR/params_epoch_50_loss_3.3857_val_loss_3.3888.pkl"
+        "params": "ens_weights/member7.pkl"
     },
     "8": {
-        "params": "Final/run_13AR/params_epoch_40_loss_3.3967_val_loss_3.4168.pkl"
+        "params": "ens_weights/member8.pkl"
     },
     "9": {
-        "params": "Final/run_13AR/params_epoch_30_loss_3.3895_val_loss_3.4443.pkl"
+        "params": "ens_weights/member9.pkl"
     },
     "10": {
-        "params": "Final/run_13AR/params_epoch_20_loss_3.4063_val_loss_3.4748.pkl"
+        "params": "ens_weights/member10.pkl"
     },
     "11": {
-        "params": "Final/run_13AR/params_epoch_10_loss_3.4933_val_loss_3.5054.pkl"
+        "params": "ens_weights/member11.pkl"
     },
     "12": {
-        "params": "Final/run_gdas_era5_12/params_epoch_46_loss_3.4099_val_loss_3.5021.pkl"
+        "params": "ens_weights/member12.pkl"
     },
     "13": {
-        "params": "Final/run_gdas_hres_12/params_epoch_100_loss_4.3309_val_loss_4.2858.pkl"
+        "params": "ens_weights/member13.pkl"
     },
     "14": {
-        "params": "Final/run_gdas_hres_12/params_epoch_150_loss_3.8835_val_loss_3.9162.pkl"
+        "params": "ens_weights/member14.pkl"
     },
     "15": {
-        "params": "Final/run_gdas_hres_12/params_epoch_200_loss_3.6893_val_loss_3.6401.pkl"
+        "params": "ens_weights/member15.pkl"
     },
     "16": {
-        "params": "Final/run_gdas_gdas_12/params_epoch_133_loss_4.3800_val_loss_4.2132.pkl"
+        "params": "ens_weights/member16.pkl"
     },
     "17": {
-        "params": "Final/run_gdas_gdas_12/params_epoch_100_loss_4.6188_val_loss_4.3812.pkl"
+        "params": "ens_weights/member17.pkl"
     },
     "18": {
-        "params": "Final/run_gdas_hres_12/params_epoch_0_loss_10.2121_val_loss_10.6374.pkl"
+        "params": "ens_weights/member18.pkl"
     },
     "19": {
-        "params": "gdas_run/12AR/params_epoch_33_loss_3.4774_val_loss_0.0000.pkl"
+        "params": "ens_weights/member19.pkl"
     },
     "20": {
-        "params": "gdas_run/11AR/params_epoch_56_loss_3.3470_val_loss_0.0000.pkl"
+        "params": "ens_weights/member20.pkl"
     },
     "21": {
-        "params": "gdas_run/10AR/params_epoch_65_loss_3.1179_val_loss_0.0000.pkl"
+        "params": "ens_weights/member21.pkl"
     },
     "22": {
-        "params": "gdas_run/9AR/params_epoch_104_loss_3.0441_val_loss_0.0000.pkl"
+        "params": "ens_weights/member22.pkl"
     },
     "23": {
-        "params": "gdas_run/8AR/params_epoch_100_loss_2.8952_val_loss_2.7971.pkl"
+        "params": "ens_weights/member23.pkl"
     },
     "24": {
-        "params": "gdas_run/7AR/params_epoch_119_loss_2.7912_val_loss_0.0000.pkl"
+        "params": "ens_weights/member24.pkl"
     },
     "25": {
-        "params": "gdas_run/6AR/params_epoch_86_loss_2.6052_val_loss_0.0000.pkl"
+        "params": "ens_weights/member25.pkl"
     },
     "26": {
-        "params": "gdas_run/5AR/params_epoch_180_loss_2.5272_val_loss_2.3709.pkl"
+        "params": "ens_weights/member26.pkl"
     },
     "27": {
-        "params": "gdas_run/4AR_3/params_epoch_15_loss_2.3752_val_loss_0.0000.pkl"
+        "params": "ens_weights/member27.pkl"
     },
     "28": {
-        "params": "gdas_run/3AR/params_epoch_92_loss_2.1452_val_loss_0.0000.pkl"
+        "params": "ens_weights/member28.pkl"
     },
     "29": {
-        "params": "gdas_run/2AR/params_epoch_140_loss_1.9750_val_loss_1.8311.pkl"
+        "params": "ens_weights/member29.pkl"
     },
     "30": {
-        "params": "gdas_run/1AR/params_epoch_363_loss_1.7324_val_loss_0.0000.pkl"
+        "params": "ens_weights/member30.pkl"
     }
 }
