@@ -46,6 +46,9 @@ Slurm jobs for 31 members can be submitted with `oper/submit_jobs.py`. Change th
 python submit_jobs.py -w /path/to/ens_weights
 ```
 
+## Output
+The model is running 4 times a day at 00Z, 06Z, 12Z and 18Z. The model outputs are avaible on [AWS s3 bucket](https://noaa-nws-graphcastgfs-pds.s3.amazonaws.com/index.html#EAGLE_ensemble/).
+
 ## Contact
 
 For questions or issues, please contact:
