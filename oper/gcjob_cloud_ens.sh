@@ -8,9 +8,6 @@
 ##SBATCH --error="$gefs_member_error.txt"
 ###SBATCH --partition=compute
 
-# load module lib
-# source /etc/profile.d/modules.sh
-
 # load necessary modules
 module use /contrib/spack-stack/envs/ufswm/install/modulefiles/Core/
 module load stack-intel
@@ -36,16 +33,6 @@ fi
 curr_datetime=$( date -d "$datetime 6 hour ago" "+%Y%m%d%H" )
 prev_datetime=$( date -d "$datetime 12 hour ago" "+%Y%m%d%H" )
 
-#curr_datetime=$forecast_date
-## Extract the date and hour parts
-#year=${curr_datetime:0:4}
-#month=${curr_datetime:4:2}
-#day=${curr_datetime:6:2}
-#hour=${curr_datetime:8:2}
-#date_string=$(printf "%04d-%02d-%02d %02d:00:00" $year $month $day $hour)
-#prev_datetime=$( date -d "$date_string 6 hour ago" "+%Y%m%d%H" )
-
-
 echo "Current state: $curr_datetime"
 echo "6 hours earlier state: $prev_datetime"
 
@@ -55,18 +42,13 @@ echo "forecast length: $forecast_length"
 num_pressure_levels=13
 echo "number of pressure levels: $num_pressure_levels"
 
-# Set Miniconda path
-#export PATH="/contrib/Sadegh.Tabas/miniconda3/bin:$PATH"
-
 # Activate Conda environment
 source /lustre2/Linlin.Cui/miniforge3/etc/profile.d/conda.sh
 conda activate graphcast
 
-# going to the model directory
-#cd /contrib/Linlin.Cui/operational/MLGEFSv1.0/MLGEFS/oper_test
-
 start_time=$(date +%s)
 echo "start runing gdas utility to generate graphcast inputs for: $curr_datetime"
+
 # Run the Python script gdas.py with the calculated times
 python3 gen_gefs_ics.py "$prev_datetime" "$curr_datetime" "$gefs_member" -l "$num_pressure_levels" -o /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/ -d /lustre2/Linlin.Cui/MLGEFSv1.0/"$curr_datetime"/
 
@@ -98,7 +80,7 @@ hour=${curr_datetime:8:2}
 aws s3 --profile gcgfs sync $curr_datetime/forecasts_13_levels_${gefs_member}_model_${model_id}/ s3://noaa-nws-graphcastgfs-pds/EAGLE_ensemble/pmlgefs."$ymd"/"$hour"/forecasts_13_levels_${gefs_member}_model_${model_id}/
 
 # Delete outputs
-#rm -r $curr_datetime/forecasts_13_levels_${gefs_member}_model_${model_id}
+rm -r $curr_datetime/forecasts_13_levels_${gefs_member}_model_${model_id}
 
 end_time=$(date +%s)  # Record the end time in seconds since the epoch
 
