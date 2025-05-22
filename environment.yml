@@ -9,10 +9,11 @@ dependencies:
   - cartopy
   - pygrib
   - eccodes
-  - iris
+  - scitools-iris
   - iris-grib
   - jupyterlab
   - boto3
   - pip
   - pip:
     - https://github.com/deepmind/graphcast/archive/master.zip
+    - flax
