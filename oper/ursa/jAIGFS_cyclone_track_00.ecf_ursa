@@ -1,0 +1,87 @@
+#!/bin/ksh --login
+  
+##SBATCH --job-name=aigfs_tc_tracker
+##SBATCH --account=nems
+##SBATCH --qos=debug
+##SBATCH --ntasks=1
+#
+###SBATCH --nodes=17
+###SBATCH --tasks-per-node=80
+###SBATCH --cpus-per-task=2
+#
+##SBATCH --time=00:30:00
+##SBATCH --mem=90g
+##SBATCH -o aigfs_tc_tracker.log
+#
+
+#%include <head.h> 
+#%include <envir-p2.h>
+
+export clustername=ursa
+module use /scratch3/NCEPDEV/nems/Linlin.Cui/git/others/TC_tracker/modulefiles
+module load ${clustername}.lua
+module list
+
+set -x
+export envir=dev
+
+export PACKAGEROOT=/scratch3/NCEPDEV/nems/Linlin.Cui/git/others/TC_tracker
+export DATAROOT=/scratch3/NCEPDEV/stmp/Linlin.Cui/ptmp
+export COMROOT=${DATAROOT}/com
+export KEEPDATA=YES
+
+# experiment configurations:
+#export PDY=20250626
+#export cyc=00
+export job=aigfs_track_${cyc}
+#member: EAGLE_SOLO:"", EAGLE_ENSEMBLE:c00, p01, ... , p30, weight: 0, 1, 2, ..., 30
+# EAGLE SOLO:
+#export pert=""
+# EAGLE ensemble
+#export pert="c00"
+#export pert="p01"
+export pert=${gefs_member}
+#modelname has to be 4 letters, EAGLE_SOLO:ggfs, EAGLE_ENSEMBLE:gc00, gp01, ..., gp30
+if [ "$pert" = "" ]; then
+   #export COMINgfs=/scratch3/NCEPDEV/nems/Jun.Wang/tracker/input/graphcastgfs.${PDY}
+   export COMINgfs=/scratch3/NCEPDEV/nems/Linlin.Cui/Tests/MLGEFSv1.0/oper/graphcastgfs.${PDY}
+   export ensemble=""
+   export fileprefix=graphcastgfs
+   export modelname="ggfs"
+else
+   export COMINgfs=/scratch3/NCEPDEV/nems/Linlin.Cui/Tests/MLGEFSv1.0/oper/$PDY$cyc
+   pertmember=`echo $pert | cut -c2-3`
+   weight=$(expr $pertmember + 0)
+   export ensmember=forecasts_13_levels_${pert}_model_${weight}
+   export fileprefix=pmlgefs${pert}
+   export modelname="g"${pert}
+fi
+#model history files
+export COMINsyn=/scratch3/NCEPDEV/nems/Linlin.Cui/Tests/MLGEFSv1.0/oper/tracker/syndat
+#export COMINsyn=/scratch3/NCEPDEV/nems/Jun.Wang/tracker/input/syndat
+
+# CALL executable job script here
+${PACKAGEROOT}/jobs/JAIGFS_CYCLONE_TRACK
+
+if [ $? -ne 0 ]; then
+  echo "tracker run FAILED"
+  exit
+else
+  echo "tracker run FINISHED"
+fi
+
+#%include <tail.h> 
+#%manual
+######################################################################
+#PURPOSE:  Executes the job that creates GFS TC track forecasts
+######################################################################
+
+######################################################################
+# Job specific troubleshooting instructions:
+#  see generic troubleshoot manual page
+#
+######################################################################
+
+# include manual page below
+#%end
+
