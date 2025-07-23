@@ -26,6 +26,11 @@ To activate the env:
 conda activate graphcast
 ```
 
+If you would like to run on GPU, you'll need to update cuda-enabled jax:
+```bash
+pip install -U "jax[cuda12]"
+```
+
 ## Usage
 ### Download model weights and statistics files:
 ```bash
